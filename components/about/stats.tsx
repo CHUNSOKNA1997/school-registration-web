@@ -7,14 +7,16 @@ const stats = [
 
 const Stats = () => {
 	return (
-		<section className="px-6 md:px-24 py-16">
-			<div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+		<section className="py-16">
+			<div className="max-w-screen-lg mx-auto px-4">
+				<div className="grid grid-cols-2 md:grid-cols-4 gap-8">
 				{stats.map((s) => (
 					<div key={s.label} className="flex flex-col gap-1">
 						<span className="text-4xl md:text-5xl font-extrabold text-slate-800">{s.value}</span>
 						<span className="text-slate-400 text-sm">{s.label}</span>
 					</div>
 				))}
+			</div>
 			</div>
 		</section>
 	);

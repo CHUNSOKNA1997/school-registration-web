@@ -1,12 +1,16 @@
+"use client";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const Footer = () => {
+	const pathname = usePathname();
 
-	const date = new Date();
-	const year = date.getFullYear();
+	if (pathname === "/") return null;
+
+	const year = new Date().getFullYear();
 
 	return (
-		<footer className="relative z-10">
+		<footer className="bg-slate-800 relative z-10">
 			<div className="h-px bg-white/20 mx-6 md:mx-10" />
 			<div className="flex flex-col items-center py-6 gap-3">
 				<div className="flex flex-col md:flex-row items-center gap-3 md:gap-8">

@@ -2,8 +2,9 @@ import Image from "next/image";
 
 const AboutIntro = () => {
 	return (
-		<section className="px-6 md:px-24 py-16 border-b border-gray-100">
-			<div className="flex flex-col md:flex-row gap-12 md:gap-20 items-center">
+		<section className="py-16 border-b border-gray-100">
+			<div className="max-w-screen-lg mx-auto px-4">
+				<div className="flex flex-col md:flex-row gap-12 md:gap-20 items-center">
 				<div className="flex-1">
 					<h2 className="text-2xl md:text-3xl font-extrabold text-slate-800 mb-6">
 						About Starlight Academy
@@ -20,13 +21,14 @@ const AboutIntro = () => {
 				</div>
 				<div className="flex-1 w-full rounded-2xl overflow-hidden">
 					<Image
-						src="/hero-section.jpeg"
+						src="/about/about.jpg"
 						alt="Students at Starlight Academy"
 						width={700}
 						height={460}
 						className="w-full object-cover rounded-2xl"
 					/>
 				</div>
+			</div>
 			</div>
 		</section>
 	);

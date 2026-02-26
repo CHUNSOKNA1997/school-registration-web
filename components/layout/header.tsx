@@ -1,11 +1,21 @@
+"use client";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
 
 const Header = () => {
+	const [scrolled, setScrolled] = useState(false);
+
+	useEffect(() => {
+		const onScroll = () => setScrolled(window.scrollY > 10);
+		window.addEventListener("scroll", onScroll, { passive: true });
+		return () => window.removeEventListener("scroll", onScroll);
+	}, []);
+
 	return (
 		<>
-			<nav className="relative z-10 flex items-center justify-between px-6 md:px-10 py-4">
+			<nav className={`relative z-10 flex items-center justify-between px-6 md:px-10 py-4 transition-colors duration-300 ${scrolled ? "bg-slate-900/80 backdrop-blur-sm" : "bg-transparent"}`}>
 				<div className="flex items-center gap-2 text-white font-bold text-lg">
 					<Image src="/starlight-logo.png" alt="Starlight Academy Logo" width={40} height={40} />
 					<span>Starlight Academy</span>
@@ -28,7 +38,7 @@ const Header = () => {
 					</Button>
 				</div>
 			</nav>
-			<div className="relative z-10 h-px bg-white/20 mx-6 md:mx-10" />
+			<div className={`relative z-10 h-px mx-6 md:mx-10 transition-colors duration-300 ${scrolled ? "bg-white/10" : "bg-white/20"}`} />
 		</>
 	);
 };

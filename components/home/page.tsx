@@ -1,8 +1,11 @@
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 const Home = () => {
+	const year = new Date().getFullYear();
+
 	return (
-		<div className="relative flex flex-col" style={{ minHeight: "calc(100vh - 65px)" }}>
+		<div className="relative flex flex-col h-screen -mt-[65px]">
 			{/* Background Image with Overlay */}
 			<div
 				className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -22,6 +25,22 @@ const Home = () => {
 				<Button className="bg-blue-500 hover:bg-blue-600 text-white px-10 py-6 text-base rounded-xl font-bold cursor-pointer">
 					Start Your Application
 				</Button>
+			</div>
+
+			{/* Footer inside hero */}
+			<div className="relative z-10 pb-6">
+				<div className="h-px bg-white/20 mx-6 md:mx-10 mb-5" />
+				<div className="flex flex-col items-center gap-2">
+					<div className="flex gap-8">
+						<Link href="/privacy" className="text-white/70 hover:text-white transition-colors text-sm">
+							Privacy Policy
+						</Link>
+						<Link href="/terms" className="text-white/70 hover:text-white transition-colors text-sm">
+							Terms of Service
+						</Link>
+					</div>
+					<p className="text-white/60 text-sm">© {year} Starlight Academy. All Rights Reserved.</p>
+				</div>
 			</div>
 		</div>
 	);
