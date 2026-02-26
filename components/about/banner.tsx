@@ -1,6 +1,6 @@
 const AboutBanner = () => {
 	return (
-		<div className="relative flex flex-col items-center justify-center text-center h-[320px] bg-cover bg-center bg-no-repeat"
+		<div className="relative flex flex-col items-center justify-center text-center h-[345px] -mt-[65px] pt-[100px] bg-cover bg-center bg-no-repeat"
 			style={{ backgroundImage: "url('/about/about.jpg')" }}
 		>
 			<div className="absolute inset-0 bg-slate-900/65" />
