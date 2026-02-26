@@ -5,7 +5,7 @@ const Home = () => {
 	const year = new Date().getFullYear();
 
 	return (
-		<div className="relative flex flex-col h-screen -mt-[73px]">
+		<div className="relative flex flex-col h-screen">
 			{/* Background Image with Overlay */}
 			<div
 				className="absolute inset-0 bg-cover bg-center bg-no-repeat"

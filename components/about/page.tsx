@@ -6,7 +6,7 @@ import OriginStory from "@/components/about/origin-story";
 
 const AboutPage = () => {
 	return (
-		<div className="flex flex-col bg-white -mt-[73px]">
+		<div className="flex flex-col bg-white">
 			<AboutBanner />
 			<AboutHero />
 			<AboutIntro />
