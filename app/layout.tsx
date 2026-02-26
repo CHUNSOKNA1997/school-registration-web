@@ -19,9 +19,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={nunito.variable}>
       <body className={`${nunito.className} antialiased flex flex-col min-h-screen`} suppressHydrationWarning>
-        <div className="sticky top-0 z-50">
-          <Header />
-        </div>
+        <Header />
         <main className="flex-1">
           {children}
         </main>

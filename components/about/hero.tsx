@@ -1,10 +1,10 @@
 import Image from "next/image";
 
 const team = [
-	{ name: "John Smith", role: "Project Lead", image: "/about/our-team/project-lead.jpg" },
-	{ name: "Sarah Johnson", role: "Software Engineer", image: "/about/our-team/software-engineer.jpg" },
-	{ name: "David Lee", role: "UI/UX Designer", image: "/about/our-team/ui-ux.jpg" },
-	{ name: "Emily Chen", role: "DevOps Engineer", image: "/about/our-team/dev-ops.png" },
+	{ name: "SOKNA Chun", role: "Project Lead", image: "/about/our-team/project-lead.jpg" },
+	{ name: "Sros Bondit", role: "Front-end Developer", image: "/about/our-team/front-end-1.jpg" },
+	{ name: "Doung Chanvattana", role: "UI/UX Designer", image: "/about/our-team/ux-ui.jpg" },
+	{ name: "Torng Mengheng", role: "Front-end Developer", image: "/about/our-team/front-end-2.png" },
 ];
 
 const AboutHero = () => {
@@ -12,7 +12,7 @@ const AboutHero = () => {
 		<section className="pt-8 pb-16 border-b border-gray-100">
 			<div className="max-w-5xl mx-auto px-4">
 				<p className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">Our Team</p>
-				<h1 className="text-3xl md:text-4xl font-extrabold text-slate-800 mb-10 max-w-xl leading-snug">
+				<h1 className="text-3xl md:text-4xl font-extrabold text-slate-800 mb-10 leading-snug">
 					Meet the team behind Starlight Academy
 				</h1>
 				<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5">
