@@ -57,7 +57,7 @@ const RegisterForm = () => {
 						<CheckCircle2 className="w-16 h-16 text-blue-500" />
 						<h2 className="text-2xl font-extrabold text-slate-800">Application Received!</h2>
 						<p className="text-slate-500 text-sm leading-relaxed">
-							Thank you for applying to Starlight Academy. Our admissions team will review your application and contact you within 3–5 business days.
+							Thank you for applying to Starlight Academy. Our admissions team will review your application and contact you within 3-5 business days.
 						</p>
 						<Button onClick={() => { setSubmitted(false); setStep(0); setForm(INITIAL_FORM); }}
 							className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-8 cursor-pointer">
