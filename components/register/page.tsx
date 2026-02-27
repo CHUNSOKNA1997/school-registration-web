@@ -59,6 +59,66 @@ const RegisterForm = () => {
 				};
 			}
 
+			if (field === "current_province_id") {
+				return {
+					...prev,
+					[field]: value,
+					current_district_id: "",
+					current_commune_id: "",
+					current_village_id: "",
+					current_address: "",
+				};
+			}
+
+			if (field === "current_district_id") {
+				return {
+					...prev,
+					[field]: value,
+					current_commune_id: "",
+					current_village_id: "",
+					current_address: "",
+				};
+			}
+
+			if (field === "current_commune_id") {
+				return {
+					...prev,
+					[field]: value,
+					current_village_id: "",
+					current_address: "",
+				};
+			}
+
+			if (field === "permanent_province_id") {
+				return {
+					...prev,
+					[field]: value,
+					permanent_district_id: "",
+					permanent_commune_id: "",
+					permanent_village_id: "",
+					permanent_address: "",
+				};
+			}
+
+			if (field === "permanent_district_id") {
+				return {
+					...prev,
+					[field]: value,
+					permanent_commune_id: "",
+					permanent_village_id: "",
+					permanent_address: "",
+				};
+			}
+
+			if (field === "permanent_commune_id") {
+				return {
+					...prev,
+					[field]: value,
+					permanent_village_id: "",
+					permanent_address: "",
+				};
+			}
+
 			return { ...prev, [field]: value };
 		});
 
