@@ -22,9 +22,11 @@ const Home = () => {
 				<p className="text-base text-white/90 mb-10 max-w-lg leading-relaxed">
 					Register now to start your application and join our community of learners. Your future awaits.
 				</p>
-				<Button className="bg-blue-500 hover:bg-blue-600 text-white px-10 py-6 text-base rounded-xl font-bold cursor-pointer">
-					Start Your Application
-				</Button>
+				<Link href="/register">
+					<Button className="bg-blue-500 hover:bg-blue-600 text-white px-10 py-6 text-base rounded-xl font-bold cursor-pointer">
+						Start Your Application
+					</Button>
+				</Link>
 			</div>
 
 			{/* Footer inside hero */}

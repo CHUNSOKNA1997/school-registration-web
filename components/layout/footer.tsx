@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 const Footer = () => {
 	const pathname = usePathname();
 
-	if (pathname === "/" || pathname === "/contact") return null;
+	if (pathname === "/" || pathname === "/contact" || pathname === "/register") return null;
 
 	const year = new Date().getFullYear();
 
