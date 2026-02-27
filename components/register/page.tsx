@@ -6,6 +6,7 @@ import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
 import { AsYouType } from "libphonenumber-js";
 import { parseAsInteger, useQueryState } from "nuqs";
+import { useForm, useWatch } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import RegisterSidebar from "./sidebar";
 import Step1Personal from "./steps/step1-personal";
@@ -25,7 +26,10 @@ const RegisterForm = () => {
 	);
 	const [submitted, setSubmitted] = useState(false);
 	const [agreeError, setAgreeError] = useState(false);
-	const [form, setForm] = useState<FormData>(INITIAL_FORM);
+	const { control, handleSubmit, reset, setValue } = useForm<FormData>({
+		defaultValues: INITIAL_FORM,
+	});
+	const form = useWatch({ control }) as FormData;
 
 	const maxStep = STEPS.length;
 	const normalizedStep = stepParam && stepParam >= 1 && stepParam <= maxStep ? stepParam : 1;
@@ -42,94 +46,80 @@ const RegisterForm = () => {
 		const field = name as keyof FormData;
 		const nextValue = PHONE_FIELDS.includes(field) ? formatPhoneNumber(value) : value;
 
-		setForm((prev) => ({
-			...prev,
-			[name]: nextValue,
-		}));
+		setValue(field, nextValue as FormData[typeof field], { shouldDirty: true, shouldTouch: true });
 	};
 
-	const handleSelect = (field: keyof FormData, value: string) =>
-		setForm((prev) => {
-			if (field === "birth_province_id") {
-				return {
-					...prev,
-					[field]: value,
-					birth_district_id: "",
-					birth_commune_id: "",
-					birth_village_id: "",
-					place_of_birth: "",
-				};
-			}
+	const setField = (field: keyof FormData, value: FormData[keyof FormData], shouldTouch = true) => {
+		setValue(field as never, value as never, { shouldDirty: true, shouldTouch });
+	};
 
-			if (field === "birth_district_id") {
-				return {
-					...prev,
-					[field]: value,
-					birth_commune_id: "",
-					birth_village_id: "",
-					place_of_birth: "",
-				};
-			}
+	const handleSelect = (field: keyof FormData, value: string) => {
+		if (field === "birth_province_id") {
+			setField("birth_province_id", value);
+			setField("birth_district_id", "");
+			setField("birth_commune_id", "");
+			setField("birth_village_id", "");
+			setField("place_of_birth", "", false);
+			return;
+		}
 
-			if (field === "birth_commune_id") {
-				return {
-					...prev,
-					[field]: value,
-					birth_village_id: "",
-					place_of_birth: "",
-				};
-			}
+		if (field === "birth_district_id") {
+			setField("birth_district_id", value);
+			setField("birth_commune_id", "");
+			setField("birth_village_id", "");
+			setField("place_of_birth", "", false);
+			return;
+		}
 
-			if (field === "student_type" && value !== "transfer") {
-				return {
-					...prev,
-					[field]: value,
-					previous_school: "",
-					documents: null,
-				};
-			}
+		if (field === "birth_commune_id") {
+			setField("birth_commune_id", value);
+			setField("birth_village_id", "");
+			setField("place_of_birth", "", false);
+			return;
+		}
 
-			if (field === "current_province_id") {
-				return {
-					...prev,
-					[field]: value,
-					current_district_id: "",
-					current_commune_id: "",
-					current_village_id: "",
-					current_address: "",
-				};
-			}
+		if (field === "student_type" && value !== "transfer") {
+			setField("student_type", value);
+			setField("previous_school", "");
+			setField("documents", null, false);
+			return;
+		}
 
-			if (field === "current_district_id") {
-				return {
-					...prev,
-					[field]: value,
-					current_commune_id: "",
-					current_village_id: "",
-					current_address: "",
-				};
-			}
+		if (field === "current_province_id") {
+			setField("current_province_id", value);
+			setField("current_district_id", "");
+			setField("current_commune_id", "");
+			setField("current_village_id", "");
+			setField("current_address", "", false);
+			return;
+		}
 
-			if (field === "current_commune_id") {
-				return {
-					...prev,
-					[field]: value,
-					current_village_id: "",
-					current_address: "",
-				};
-			}
+		if (field === "current_district_id") {
+			setField("current_district_id", value);
+			setField("current_commune_id", "");
+			setField("current_village_id", "");
+			setField("current_address", "", false);
+			return;
+		}
 
-			return { ...prev, [field]: value };
-		});
+		if (field === "current_commune_id") {
+			setField("current_commune_id", value);
+			setField("current_village_id", "");
+			setField("current_address", "", false);
+			return;
+		}
+
+		setField(field, value as FormData[typeof field]);
+	};
 
 	const handleDateChange = (field: keyof FormData, date: Date | undefined) =>
-		setForm((prev) => ({ ...prev, [field]: date ?? null }));
+		setField(field, (date ?? null) as FormData[typeof field]);
 
 	const handleFile = (e: React.ChangeEvent<HTMLInputElement>, field: "photo" | "documents") =>
-		setForm((prev) => ({ ...prev, [field]: e.target.files?.[0] ?? null }));
+		setField(field, e.target.files?.[0] ?? null);
 
 	const handleAgreeChange = (checked: boolean) => {
-		setForm((prev) => ({ ...prev, agree: checked }));
+		setField("agree", checked);
 		if (checked) setAgreeError(false);
 	};
 
@@ -140,22 +130,21 @@ const RegisterForm = () => {
 
 	const resetForm = () => {
 		setSubmitted(false);
-		setForm(INITIAL_FORM);
+		reset(INITIAL_FORM);
 		setAgreeError(false);
 		void setStepParam(1, { history: "replace", scroll: false });
 	};
 
 	const next = (e: React.FormEvent) => { e.preventDefault(); goToStep(step + 1); };
 	const back = () => goToStep(step - 1);
-	const submit = (e: React.FormEvent) => {
-		e.preventDefault();
-		if (!form.agree) {
+	const submit = handleSubmit((values) => {
+		if (!values.agree) {
 			setAgreeError(true);
 			return;
 		}
 		setAgreeError(false);
 		setSubmitted(true);
-	};
+	});
 
 	const sharedProps = { form, onChange: handleInput, onSelect: handleSelect, onDateChange: handleDateChange, step, onBack: back };
 
