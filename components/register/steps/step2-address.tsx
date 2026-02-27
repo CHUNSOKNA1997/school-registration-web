@@ -1,26 +1,14 @@
 "use client";
 
 import { useEffect, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
-import {
-	getCommunesByDistrictAction,
-	getDistrictsByProvinceAction,
-	getProvincesAction,
-	getVillagesByCommuneAction,
-} from "@/actions/addresses.action";
 import { Input } from "@/components/ui/input";
 import {
 	Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { useAddresses, type PumiItem } from "@/hooks/useAddresses";
 import FormField from "../form-field";
 import StepButtons from "../step-buttons";
 import type { FormData } from "../types";
-
-type PumiItem = {
-	id: number | string;
-	name_en?: string;
-	name_km?: string;
-};
 
 type Props = {
 	form: FormData;
@@ -32,7 +20,6 @@ type Props = {
 };
 
 const toLabel = (item: PumiItem) => item.name_en ?? item.name_km ?? String(item.id);
-const EMPTY_ITEMS: PumiItem[] = [];
 const SELECT_CONTENT_STYLE = { maxHeight: "18rem" } as const;
 const ADDRESS_SELECT_CONTENT_PROPS = {
 	position: "popper" as const,
@@ -42,81 +29,23 @@ const ADDRESS_SELECT_CONTENT_PROPS = {
 };
 
 const Step2Address = ({ form, onChange, onSelect, onNext, step, onBack }: Props) => {
-	const provincesQuery = useQuery({
-		queryKey: ["pumi", "provinces"],
-		queryFn: getProvincesAction,
-	});
-
-	const districtsQuery = useQuery({
-		queryKey: ["pumi", "districts", form.current_province_id],
-		queryFn: () => getDistrictsByProvinceAction(form.current_province_id),
-		enabled: Boolean(form.current_province_id),
-	});
-
-	const communesQuery = useQuery({
-		queryKey: ["pumi", "communes", form.current_district_id],
-		queryFn: () => getCommunesByDistrictAction(form.current_district_id),
-		enabled: Boolean(form.current_district_id),
-	});
-
-	const villagesQuery = useQuery({
-		queryKey: ["pumi", "villages", form.current_commune_id],
-		queryFn: () => getVillagesByCommuneAction(form.current_commune_id),
-		enabled: Boolean(form.current_commune_id),
-	});
-
-	const permanentDistrictsQuery = useQuery({
-		queryKey: ["pumi", "permanent-districts", form.permanent_province_id],
-		queryFn: () => getDistrictsByProvinceAction(form.permanent_province_id),
-		enabled: Boolean(form.permanent_province_id),
-	});
-
-	const permanentCommunesQuery = useQuery({
-		queryKey: ["pumi", "permanent-communes", form.permanent_district_id],
-		queryFn: () => getCommunesByDistrictAction(form.permanent_district_id),
-		enabled: Boolean(form.permanent_district_id),
-	});
-
-	const permanentVillagesQuery = useQuery({
-		queryKey: ["pumi", "permanent-villages", form.permanent_commune_id],
-		queryFn: () => getVillagesByCommuneAction(form.permanent_commune_id),
-		enabled: Boolean(form.permanent_commune_id),
-	});
-
-	const provinces = provincesQuery.data ?? EMPTY_ITEMS;
-	const districts = districtsQuery.data ?? EMPTY_ITEMS;
-	const communes = communesQuery.data ?? EMPTY_ITEMS;
-	const villages = villagesQuery.data ?? EMPTY_ITEMS;
-	const permanentDistricts = permanentDistrictsQuery.data ?? EMPTY_ITEMS;
-	const permanentCommunes = permanentCommunesQuery.data ?? EMPTY_ITEMS;
-	const permanentVillages = permanentVillagesQuery.data ?? EMPTY_ITEMS;
-
-	const loadingProvinces = provincesQuery.isPending;
-	const loadingDistricts = Boolean(form.current_province_id) && districtsQuery.isPending;
-	const loadingCommunes = Boolean(form.current_district_id) && communesQuery.isPending;
-	const loadingVillages = Boolean(form.current_commune_id) && villagesQuery.isPending;
-	const loadingPermanentDistricts = Boolean(form.permanent_province_id) && permanentDistrictsQuery.isPending;
-	const loadingPermanentCommunes = Boolean(form.permanent_district_id) && permanentCommunesQuery.isPending;
-	const loadingPermanentVillages = Boolean(form.permanent_commune_id) && permanentVillagesQuery.isPending;
-
-	const locationError = useMemo(() => {
-		if (provincesQuery.error) return "Unable to load provinces from Pumi.";
-		if (districtsQuery.error) return "Unable to load districts from Pumi.";
-		if (communesQuery.error) return "Unable to load communes from Pumi.";
-		if (villagesQuery.error) return "Unable to load villages from Pumi.";
-		if (permanentDistrictsQuery.error) return "Unable to load permanent districts from Pumi.";
-		if (permanentCommunesQuery.error) return "Unable to load permanent communes from Pumi.";
-		if (permanentVillagesQuery.error) return "Unable to load permanent villages from Pumi.";
-		return null;
-	}, [
-		communesQuery.error,
-		districtsQuery.error,
-		permanentCommunesQuery.error,
-		permanentDistrictsQuery.error,
-		permanentVillagesQuery.error,
-		provincesQuery.error,
-		villagesQuery.error,
-	]);
+	const {
+		communes,
+		districts,
+		loadingCommunes,
+		loadingDistricts,
+		loadingPermanentCommunes,
+		loadingPermanentDistricts,
+		loadingPermanentVillages,
+		loadingProvinces,
+		loadingVillages,
+		locationError,
+		permanentCommunes,
+		permanentDistricts,
+		permanentVillages,
+		provinces,
+		villages,
+	} = useAddresses(form);
 
 	const provinceLabel = useMemo(
 		() => toLabel(provinces.find((item) => String(item.id) === form.current_province_id) ?? { id: "" }),
@@ -349,7 +278,11 @@ const Step2Address = ({ form, onChange, onSelect, onNext, step, onBack }: Props)
 						<SelectTrigger className="bg-white h-9 w-full">
 							<SelectValue placeholder={loadingPermanentCommunes ? "Loading..." : "Select commune..."} />
 						</SelectTrigger>
-						<SelectContent className="h-auto max-h-none overflow-visible">
+						<SelectContent
+							{...ADDRESS_SELECT_CONTENT_PROPS}
+							className="overflow-y-auto overflow-x-hidden"
+							style={SELECT_CONTENT_STYLE}
+						>
 							{permanentCommunes.map((item) => (
 								<SelectItem key={`permanent-commune-${item.id}`} value={String(item.id)}>
 									{toLabel(item)}
