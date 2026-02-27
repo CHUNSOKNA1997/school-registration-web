@@ -1,6 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import {
+	getCommunesByDistrictAction,
+	getDistrictsByProvinceAction,
+	getProvincesAction,
+	getVillagesByCommuneAction,
+} from "@/actions/addresses.action";
 import { Input } from "@/components/ui/input";
 import {
 	Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -15,29 +22,6 @@ type PumiItem = {
 	name_km?: string;
 };
 
-const PUMI_BASE_URL = "/api/pumi";
-
-const toLabel = (item: PumiItem) => item.name_en ?? item.name_km ?? String(item.id);
-
-const readPumiItems = (payload: unknown): PumiItem[] => {
-	if (Array.isArray(payload)) return payload as PumiItem[];
-	if (
-		payload &&
-		typeof payload === "object" &&
-		"data" in payload &&
-		Array.isArray((payload as { data: unknown }).data)
-	) {
-		return (payload as { data: PumiItem[] }).data;
-	}
-	return [];
-};
-
-const fetchPumi = async (path: string): Promise<PumiItem[]> => {
-	const response = await fetch(`${PUMI_BASE_URL}${path}`);
-	if (!response.ok) throw new Error(`Pumi request failed: ${response.status}`);
-	return readPumiItems(await response.json());
-};
-
 type Props = {
 	form: FormData;
 	onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
@@ -47,253 +31,92 @@ type Props = {
 	onBack: () => void;
 };
 
+const toLabel = (item: PumiItem) => item.name_en ?? item.name_km ?? String(item.id);
+const EMPTY_ITEMS: PumiItem[] = [];
+const SELECT_CONTENT_STYLE = { maxHeight: "18rem" } as const;
+const ADDRESS_SELECT_CONTENT_PROPS = {
+	position: "popper" as const,
+	side: "bottom" as const,
+	align: "start" as const,
+	sideOffset: 4,
+};
+
 const Step2Address = ({ form, onChange, onSelect, onNext, step, onBack }: Props) => {
-	const [provinces, setProvinces] = useState<PumiItem[]>([]);
-	const [districts, setDistricts] = useState<PumiItem[]>([]);
-	const [communes, setCommunes] = useState<PumiItem[]>([]);
-	const [villages, setVillages] = useState<PumiItem[]>([]);
-	const [permanentDistricts, setPermanentDistricts] = useState<PumiItem[]>([]);
-	const [permanentCommunes, setPermanentCommunes] = useState<PumiItem[]>([]);
-	const [permanentVillages, setPermanentVillages] = useState<PumiItem[]>([]);
+	const provincesQuery = useQuery({
+		queryKey: ["pumi", "provinces"],
+		queryFn: getProvincesAction,
+	});
 
-	const [loadingProvinces, setLoadingProvinces] = useState(false);
-	const [loadingDistricts, setLoadingDistricts] = useState(false);
-	const [loadingCommunes, setLoadingCommunes] = useState(false);
-	const [loadingVillages, setLoadingVillages] = useState(false);
-	const [loadingPermanentDistricts, setLoadingPermanentDistricts] = useState(false);
-	const [loadingPermanentCommunes, setLoadingPermanentCommunes] = useState(false);
-	const [loadingPermanentVillages, setLoadingPermanentVillages] = useState(false);
-	const [locationError, setLocationError] = useState<string | null>(null);
+	const districtsQuery = useQuery({
+		queryKey: ["pumi", "districts", form.current_province_id],
+		queryFn: () => getDistrictsByProvinceAction(form.current_province_id),
+		enabled: Boolean(form.current_province_id),
+	});
 
-	useEffect(() => {
-		let active = true;
-		queueMicrotask(() => {
-			setLoadingProvinces(true);
-			setLocationError(null);
-		});
+	const communesQuery = useQuery({
+		queryKey: ["pumi", "communes", form.current_district_id],
+		queryFn: () => getCommunesByDistrictAction(form.current_district_id),
+		enabled: Boolean(form.current_district_id),
+	});
 
-		fetchPumi("/provinces")
-			.then((data) => {
-				if (!active) return;
-				setProvinces(data);
-			})
-			.catch(() => {
-				if (!active) return;
-				setLocationError("Unable to load provinces from Pumi.");
-				setProvinces([]);
-			})
-			.finally(() => {
-				if (active) setLoadingProvinces(false);
-			});
+	const villagesQuery = useQuery({
+		queryKey: ["pumi", "villages", form.current_commune_id],
+		queryFn: () => getVillagesByCommuneAction(form.current_commune_id),
+		enabled: Boolean(form.current_commune_id),
+	});
 
-		return () => {
-			active = false;
-		};
-	}, []);
+	const permanentDistrictsQuery = useQuery({
+		queryKey: ["pumi", "permanent-districts", form.permanent_province_id],
+		queryFn: () => getDistrictsByProvinceAction(form.permanent_province_id),
+		enabled: Boolean(form.permanent_province_id),
+	});
 
-	useEffect(() => {
-		if (!form.current_province_id) {
-			queueMicrotask(() => {
-				setDistricts([]);
-				setLoadingDistricts(false);
-			});
-			return;
-		}
+	const permanentCommunesQuery = useQuery({
+		queryKey: ["pumi", "permanent-communes", form.permanent_district_id],
+		queryFn: () => getCommunesByDistrictAction(form.permanent_district_id),
+		enabled: Boolean(form.permanent_district_id),
+	});
 
-		let active = true;
-		queueMicrotask(() => {
-			setLoadingDistricts(true);
-			setLocationError(null);
-		});
+	const permanentVillagesQuery = useQuery({
+		queryKey: ["pumi", "permanent-villages", form.permanent_commune_id],
+		queryFn: () => getVillagesByCommuneAction(form.permanent_commune_id),
+		enabled: Boolean(form.permanent_commune_id),
+	});
 
-		fetchPumi(`/districts?province_id=${encodeURIComponent(form.current_province_id)}`)
-			.then((data) => {
-				if (!active) return;
-				setDistricts(data);
-			})
-			.catch(() => {
-				if (!active) return;
-				setLocationError("Unable to load districts from Pumi.");
-				setDistricts([]);
-			})
-			.finally(() => {
-				if (active) setLoadingDistricts(false);
-			});
+	const provinces = provincesQuery.data ?? EMPTY_ITEMS;
+	const districts = districtsQuery.data ?? EMPTY_ITEMS;
+	const communes = communesQuery.data ?? EMPTY_ITEMS;
+	const villages = villagesQuery.data ?? EMPTY_ITEMS;
+	const permanentDistricts = permanentDistrictsQuery.data ?? EMPTY_ITEMS;
+	const permanentCommunes = permanentCommunesQuery.data ?? EMPTY_ITEMS;
+	const permanentVillages = permanentVillagesQuery.data ?? EMPTY_ITEMS;
 
-		return () => {
-			active = false;
-		};
-	}, [form.current_province_id]);
+	const loadingProvinces = provincesQuery.isPending;
+	const loadingDistricts = Boolean(form.current_province_id) && districtsQuery.isPending;
+	const loadingCommunes = Boolean(form.current_district_id) && communesQuery.isPending;
+	const loadingVillages = Boolean(form.current_commune_id) && villagesQuery.isPending;
+	const loadingPermanentDistricts = Boolean(form.permanent_province_id) && permanentDistrictsQuery.isPending;
+	const loadingPermanentCommunes = Boolean(form.permanent_district_id) && permanentCommunesQuery.isPending;
+	const loadingPermanentVillages = Boolean(form.permanent_commune_id) && permanentVillagesQuery.isPending;
 
-	useEffect(() => {
-		if (!form.current_district_id) {
-			queueMicrotask(() => {
-				setCommunes([]);
-				setLoadingCommunes(false);
-			});
-			return;
-		}
-
-		let active = true;
-		queueMicrotask(() => {
-			setLoadingCommunes(true);
-			setLocationError(null);
-		});
-
-		fetchPumi(`/communes?district_id=${encodeURIComponent(form.current_district_id)}`)
-			.then((data) => {
-				if (!active) return;
-				setCommunes(data);
-			})
-			.catch(() => {
-				if (!active) return;
-				setLocationError("Unable to load communes from Pumi.");
-				setCommunes([]);
-			})
-			.finally(() => {
-				if (active) setLoadingCommunes(false);
-			});
-
-		return () => {
-			active = false;
-		};
-	}, [form.current_district_id]);
-
-	useEffect(() => {
-		if (!form.current_commune_id) {
-			queueMicrotask(() => {
-				setVillages([]);
-				setLoadingVillages(false);
-			});
-			return;
-		}
-
-		let active = true;
-		queueMicrotask(() => {
-			setLoadingVillages(true);
-			setLocationError(null);
-		});
-
-		fetchPumi(`/villages?commune_id=${encodeURIComponent(form.current_commune_id)}`)
-			.then((data) => {
-				if (!active) return;
-				setVillages(data);
-			})
-			.catch(() => {
-				if (!active) return;
-				setLocationError("Unable to load villages from Pumi.");
-				setVillages([]);
-			})
-			.finally(() => {
-				if (active) setLoadingVillages(false);
-			});
-
-		return () => {
-			active = false;
-		};
-	}, [form.current_commune_id]);
-
-	useEffect(() => {
-		if (!form.permanent_province_id) {
-			queueMicrotask(() => {
-				setPermanentDistricts([]);
-				setLoadingPermanentDistricts(false);
-			});
-			return;
-		}
-
-		let active = true;
-		queueMicrotask(() => {
-			setLoadingPermanentDistricts(true);
-			setLocationError(null);
-		});
-
-		fetchPumi(`/districts?province_id=${encodeURIComponent(form.permanent_province_id)}`)
-			.then((data) => {
-				if (!active) return;
-				setPermanentDistricts(data);
-			})
-			.catch(() => {
-				if (!active) return;
-				setLocationError("Unable to load permanent districts from Pumi.");
-				setPermanentDistricts([]);
-			})
-			.finally(() => {
-				if (active) setLoadingPermanentDistricts(false);
-			});
-
-		return () => {
-			active = false;
-		};
-	}, [form.permanent_province_id]);
-
-	useEffect(() => {
-		if (!form.permanent_district_id) {
-			queueMicrotask(() => {
-				setPermanentCommunes([]);
-				setLoadingPermanentCommunes(false);
-			});
-			return;
-		}
-
-		let active = true;
-		queueMicrotask(() => {
-			setLoadingPermanentCommunes(true);
-			setLocationError(null);
-		});
-
-		fetchPumi(`/communes?district_id=${encodeURIComponent(form.permanent_district_id)}`)
-			.then((data) => {
-				if (!active) return;
-				setPermanentCommunes(data);
-			})
-			.catch(() => {
-				if (!active) return;
-				setLocationError("Unable to load permanent communes from Pumi.");
-				setPermanentCommunes([]);
-			})
-			.finally(() => {
-				if (active) setLoadingPermanentCommunes(false);
-			});
-
-		return () => {
-			active = false;
-		};
-	}, [form.permanent_district_id]);
-
-	useEffect(() => {
-		if (!form.permanent_commune_id) {
-			queueMicrotask(() => {
-				setPermanentVillages([]);
-				setLoadingPermanentVillages(false);
-			});
-			return;
-		}
-
-		let active = true;
-		queueMicrotask(() => {
-			setLoadingPermanentVillages(true);
-			setLocationError(null);
-		});
-
-		fetchPumi(`/villages?commune_id=${encodeURIComponent(form.permanent_commune_id)}`)
-			.then((data) => {
-				if (!active) return;
-				setPermanentVillages(data);
-			})
-			.catch(() => {
-				if (!active) return;
-				setLocationError("Unable to load permanent villages from Pumi.");
-				setPermanentVillages([]);
-			})
-			.finally(() => {
-				if (active) setLoadingPermanentVillages(false);
-			});
-
-		return () => {
-			active = false;
-		};
-	}, [form.permanent_commune_id]);
+	const locationError = useMemo(() => {
+		if (provincesQuery.error) return "Unable to load provinces from Pumi.";
+		if (districtsQuery.error) return "Unable to load districts from Pumi.";
+		if (communesQuery.error) return "Unable to load communes from Pumi.";
+		if (villagesQuery.error) return "Unable to load villages from Pumi.";
+		if (permanentDistrictsQuery.error) return "Unable to load permanent districts from Pumi.";
+		if (permanentCommunesQuery.error) return "Unable to load permanent communes from Pumi.";
+		if (permanentVillagesQuery.error) return "Unable to load permanent villages from Pumi.";
+		return null;
+	}, [
+		communesQuery.error,
+		districtsQuery.error,
+		permanentCommunesQuery.error,
+		permanentDistrictsQuery.error,
+		permanentVillagesQuery.error,
+		provincesQuery.error,
+		villagesQuery.error,
+	]);
 
 	const provinceLabel = useMemo(
 		() => toLabel(provinces.find((item) => String(item.id) === form.current_province_id) ?? { id: "" }),
@@ -348,6 +171,7 @@ const Step2Address = ({ form, onChange, onSelect, onNext, step, onBack }: Props)
 			onSelect("current_address", currentAddress);
 		}
 	}, [currentAddress, form.current_address, onSelect]);
+
 	useEffect(() => {
 		if (form.permanent_address !== permanentAddress) {
 			onSelect("permanent_address", permanentAddress);
@@ -367,7 +191,11 @@ const Step2Address = ({ form, onChange, onSelect, onNext, step, onBack }: Props)
 						<SelectTrigger className="bg-white h-9 w-full">
 							<SelectValue placeholder={loadingProvinces ? "Loading..." : "Select province..."} />
 						</SelectTrigger>
-						<SelectContent>
+						<SelectContent
+							{...ADDRESS_SELECT_CONTENT_PROPS}
+							className="overflow-y-auto overflow-x-hidden"
+							style={SELECT_CONTENT_STYLE}
+						>
 							{provinces.map((item) => (
 								<SelectItem key={item.id} value={String(item.id)}>
 									{toLabel(item)}
@@ -387,7 +215,11 @@ const Step2Address = ({ form, onChange, onSelect, onNext, step, onBack }: Props)
 						<SelectTrigger className="bg-white h-9 w-full">
 							<SelectValue placeholder={loadingDistricts ? "Loading..." : "Select district..."} />
 						</SelectTrigger>
-						<SelectContent>
+						<SelectContent
+							{...ADDRESS_SELECT_CONTENT_PROPS}
+							className="overflow-y-auto overflow-x-hidden"
+							style={SELECT_CONTENT_STYLE}
+						>
 							{districts.map((item) => (
 								<SelectItem key={item.id} value={String(item.id)}>
 									{toLabel(item)}
@@ -409,7 +241,11 @@ const Step2Address = ({ form, onChange, onSelect, onNext, step, onBack }: Props)
 						<SelectTrigger className="bg-white h-9 w-full">
 							<SelectValue placeholder={loadingCommunes ? "Loading..." : "Select commune..."} />
 						</SelectTrigger>
-						<SelectContent>
+						<SelectContent
+							{...ADDRESS_SELECT_CONTENT_PROPS}
+							className="overflow-y-auto overflow-x-hidden"
+							style={SELECT_CONTENT_STYLE}
+						>
 							{communes.map((item) => (
 								<SelectItem key={item.id} value={String(item.id)}>
 									{toLabel(item)}
@@ -429,7 +265,11 @@ const Step2Address = ({ form, onChange, onSelect, onNext, step, onBack }: Props)
 						<SelectTrigger className="bg-white h-9 w-full">
 							<SelectValue placeholder={loadingVillages ? "Loading..." : "Select village..."} />
 						</SelectTrigger>
-						<SelectContent>
+						<SelectContent
+							{...ADDRESS_SELECT_CONTENT_PROPS}
+							className="overflow-y-auto overflow-x-hidden"
+							style={SELECT_CONTENT_STYLE}
+						>
 							{villages.map((item) => (
 								<SelectItem key={item.id} value={String(item.id)}>
 									{toLabel(item)}
@@ -461,7 +301,11 @@ const Step2Address = ({ form, onChange, onSelect, onNext, step, onBack }: Props)
 						<SelectTrigger className="bg-white h-9 w-full">
 							<SelectValue placeholder={loadingProvinces ? "Loading..." : "Select province..."} />
 						</SelectTrigger>
-						<SelectContent>
+						<SelectContent
+							{...ADDRESS_SELECT_CONTENT_PROPS}
+							className="overflow-y-auto overflow-x-hidden"
+							style={SELECT_CONTENT_STYLE}
+						>
 							{provinces.map((item) => (
 								<SelectItem key={`permanent-province-${item.id}`} value={String(item.id)}>
 									{toLabel(item)}
@@ -480,7 +324,11 @@ const Step2Address = ({ form, onChange, onSelect, onNext, step, onBack }: Props)
 						<SelectTrigger className="bg-white h-9 w-full">
 							<SelectValue placeholder={loadingPermanentDistricts ? "Loading..." : "Select district..."} />
 						</SelectTrigger>
-						<SelectContent>
+						<SelectContent
+							{...ADDRESS_SELECT_CONTENT_PROPS}
+							className="overflow-y-auto overflow-x-hidden"
+							style={SELECT_CONTENT_STYLE}
+						>
 							{permanentDistricts.map((item) => (
 								<SelectItem key={`permanent-district-${item.id}`} value={String(item.id)}>
 									{toLabel(item)}
@@ -501,7 +349,7 @@ const Step2Address = ({ form, onChange, onSelect, onNext, step, onBack }: Props)
 						<SelectTrigger className="bg-white h-9 w-full">
 							<SelectValue placeholder={loadingPermanentCommunes ? "Loading..." : "Select commune..."} />
 						</SelectTrigger>
-						<SelectContent>
+						<SelectContent className="h-auto max-h-none overflow-visible">
 							{permanentCommunes.map((item) => (
 								<SelectItem key={`permanent-commune-${item.id}`} value={String(item.id)}>
 									{toLabel(item)}
@@ -520,7 +368,11 @@ const Step2Address = ({ form, onChange, onSelect, onNext, step, onBack }: Props)
 						<SelectTrigger className="bg-white h-9 w-full">
 							<SelectValue placeholder={loadingPermanentVillages ? "Loading..." : "Select village..."} />
 						</SelectTrigger>
-						<SelectContent>
+						<SelectContent
+							{...ADDRESS_SELECT_CONTENT_PROPS}
+							className="overflow-y-auto overflow-x-hidden"
+							style={SELECT_CONTENT_STYLE}
+						>
 							{permanentVillages.map((item) => (
 								<SelectItem key={`permanent-village-${item.id}`} value={String(item.id)}>
 									{toLabel(item)}
@@ -555,7 +407,7 @@ const Step2Address = ({ form, onChange, onSelect, onNext, step, onBack }: Props)
 				<FormField label="Relationship" required>
 					<Select required value={form.emergency_contact_relationship} onValueChange={(value) => onSelect("emergency_contact_relationship", value)}>
 						<SelectTrigger className="bg-white h-9 w-full"><SelectValue placeholder="Select..." /></SelectTrigger>
-						<SelectContent>
+						<SelectContent className="overflow-y-auto overflow-x-hidden" style={SELECT_CONTENT_STYLE}>
 							<SelectItem value="parent">Parent</SelectItem>
 							<SelectItem value="sibling">Sibling</SelectItem>
 							<SelectItem value="guardian">Guardian</SelectItem>

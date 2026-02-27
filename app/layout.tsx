@@ -4,6 +4,7 @@ import { NuqsAdapter } from "nuqs/adapters/next/app";
 import "./globals.css";
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
+import QueryProvider from "@/components/providers/query-provider";
 
 const nunito = Nunito({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -20,13 +21,15 @@ export default function RootLayout({
   return (
     <html lang="en" className={nunito.variable}>
       <body className={`${nunito.className} antialiased flex flex-col min-h-screen`} suppressHydrationWarning>
-        <NuqsAdapter>
-          <Header />
-          <main className="flex-1">
-            {children}
-          </main>
-          <Footer />
-        </NuqsAdapter>
+        <QueryProvider>
+          <NuqsAdapter>
+            <Header />
+            <main className="flex-1">
+              {children}
+            </main>
+            <Footer />
+          </NuqsAdapter>
+        </QueryProvider>
       </body>
     </html>
   );
