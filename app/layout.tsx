@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Nunito } from "next/font/google";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 import "./globals.css";
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
@@ -19,11 +20,13 @@ export default function RootLayout({
   return (
     <html lang="en" className={nunito.variable}>
       <body className={`${nunito.className} antialiased flex flex-col min-h-screen`} suppressHydrationWarning>
-        <Header />
-        <main className="flex-1">
-          {children}
-        </main>
-        <Footer />
+        <NuqsAdapter>
+          <Header />
+          <main className="flex-1">
+            {children}
+          </main>
+          <Footer />
+        </NuqsAdapter>
       </body>
     </html>
   );

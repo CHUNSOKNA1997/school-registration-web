@@ -62,7 +62,6 @@ const Step1Personal = ({ form, onChange, onSelect, onDateChange, onNext, step, o
 					<SelectContent>
 						<SelectItem value="new">New Student</SelectItem>
 						<SelectItem value="transfer">Transfer</SelectItem>
-						<SelectItem value="returning">Returning</SelectItem>
 					</SelectContent>
 				</Select>
 			</FormField>

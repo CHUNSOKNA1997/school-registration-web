@@ -22,7 +22,6 @@ export type FormData = {
 	// Step 4 – Academic Details
 	class_id: string;
 	shift: string;
-	registration_date: string;
 	academic_year: string;
 	previous_school: string;
 	notes: string;
@@ -38,7 +37,7 @@ export const INITIAL_FORM: FormData = {
 	current_address: "", permanent_address: "", emergency_contact: "",
 	emergency_contact_relationship: "",
 	parent_name: "", parent_phone: "", parent_occupation: "",
-	class_id: "", shift: "", registration_date: "", academic_year: "",
+	class_id: "", shift: "", academic_year: "",
 	previous_school: "", notes: "", photo: null, documents: null, agree: false,
 };
 

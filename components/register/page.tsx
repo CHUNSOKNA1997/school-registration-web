@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
+import { AsYouType } from "libphonenumber-js";
+import { parseAsInteger, useQueryState } from "nuqs";
 import { Button } from "@/components/ui/button";
 import RegisterSidebar from "./sidebar";
 import Step1Personal from "./steps/step1-personal";
@@ -12,21 +14,53 @@ import Step3Parent from "./steps/step3-parent";
 import Step4Academic from "./steps/step4-academic";
 import { INITIAL_FORM, STEPS, type FormData } from "./types";
 
+const PHONE_FIELDS: Array<keyof FormData> = ["phone", "parent_phone", "emergency_contact"];
+
+const formatPhoneNumber = (value: string) => new AsYouType("KH").input(value);
+
 const RegisterForm = () => {
-	const [step, setStep] = useState(0);
+	const [stepParam, setStepParam] = useQueryState(
+		"step",
+		parseAsInteger.withOptions({ history: "push", scroll: false }),
+	);
 	const [submitted, setSubmitted] = useState(false);
+	const [agreeError, setAgreeError] = useState(false);
 	const [form, setForm] = useState<FormData>(INITIAL_FORM);
 
+	const maxStep = STEPS.length;
+	const normalizedStep = stepParam && stepParam >= 1 && stepParam <= maxStep ? stepParam : 1;
+	const step = normalizedStep - 1;
+
+	useEffect(() => {
+		if (stepParam !== normalizedStep) {
+			void setStepParam(normalizedStep, { history: "replace", scroll: false });
+		}
+	}, [normalizedStep, setStepParam, stepParam]);
+
 	const handleInput = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-		const { name, value, type } = e.target;
+		const { name, value } = e.target;
+		const field = name as keyof FormData;
+		const nextValue = PHONE_FIELDS.includes(field) ? formatPhoneNumber(value) : value;
+
 		setForm((prev) => ({
 			...prev,
-			[name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
+			[name]: nextValue,
 		}));
 	};
 
 	const handleSelect = (field: keyof FormData, value: string) =>
-		setForm((prev) => ({ ...prev, [field]: value }));
+		setForm((prev) => {
+			if (field === "student_type" && value !== "transfer") {
+				return {
+					...prev,
+					[field]: value,
+					previous_school: "",
+					documents: null,
+				};
+			}
+
+			return { ...prev, [field]: value };
+		});
 
 	const handleDateChange = (field: keyof FormData, date: Date | undefined) =>
 		setForm((prev) => ({ ...prev, [field]: date ?? null }));
@@ -34,9 +68,34 @@ const RegisterForm = () => {
 	const handleFile = (e: React.ChangeEvent<HTMLInputElement>, field: "photo" | "documents") =>
 		setForm((prev) => ({ ...prev, [field]: e.target.files?.[0] ?? null }));
 
-	const next = (e: React.FormEvent) => { e.preventDefault(); setStep((s) => s + 1); };
-	const back = () => setStep((s) => s - 1);
-	const submit = (e: React.FormEvent) => { e.preventDefault(); setSubmitted(true); };
+	const handleAgreeChange = (checked: boolean) => {
+		setForm((prev) => ({ ...prev, agree: checked }));
+		if (checked) setAgreeError(false);
+	};
+
+	const goToStep = (nextStep: number) => {
+		const clamped = Math.min(Math.max(nextStep, 0), maxStep - 1) + 1;
+		void setStepParam(clamped, { history: "push", scroll: false });
+	};
+
+	const resetForm = () => {
+		setSubmitted(false);
+		setForm(INITIAL_FORM);
+		setAgreeError(false);
+		void setStepParam(1, { history: "replace", scroll: false });
+	};
+
+	const next = (e: React.FormEvent) => { e.preventDefault(); goToStep(step + 1); };
+	const back = () => goToStep(step - 1);
+	const submit = (e: React.FormEvent) => {
+		e.preventDefault();
+		if (!form.agree) {
+			setAgreeError(true);
+			return;
+		}
+		setAgreeError(false);
+		setSubmitted(true);
+	};
 
 	const sharedProps = { form, onChange: handleInput, onSelect: handleSelect, onDateChange: handleDateChange, step, onBack: back };
 
@@ -59,7 +118,7 @@ const RegisterForm = () => {
 						<p className="text-slate-500 text-sm leading-relaxed">
 							Thank you for applying to Starlight Academy. Our admissions team will review your application and contact you within 3-5 business days.
 						</p>
-						<Button onClick={() => { setSubmitted(false); setStep(0); setForm(INITIAL_FORM); }}
+						<Button onClick={resetForm}
 							className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-8 cursor-pointer">
 							Submit Another
 						</Button>
@@ -82,7 +141,7 @@ const RegisterForm = () => {
 						{step === 0 && <Step1Personal {...sharedProps} onNext={next} />}
 						{step === 1 && <Step2Address  {...sharedProps} onNext={next} />}
 						{step === 2 && <Step3Parent   {...sharedProps} onNext={next} />}
-						{step === 3 && <Step4Academic {...sharedProps} onFile={handleFile} onSubmit={submit} />}
+						{step === 3 && <Step4Academic {...sharedProps} onFile={handleFile} onAgreeChange={handleAgreeChange} agreeError={agreeError} onSubmit={submit} />}
 
 						<p className="text-center text-xs text-slate-400 mt-4">
 							<Link href="/" className="text-blue-500 hover:underline">← Back to Home</Link>
