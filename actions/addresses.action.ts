@@ -1,6 +1,7 @@
 "use server";
 
 import { isAxiosError } from "axios";
+import { headers } from "next/headers";
 import api from "@/lib/api/axios/api";
 
 type PumiItem = {
@@ -13,10 +14,42 @@ type PumiPayload = PumiItem[] | { data: PumiItem[] };
 
 type PumiResource = "provinces" | "districts" | "communes" | "villages";
 
-const DEFAULT_PUMI_BASE_URL = "https://pumi.onrender.com/pumi";
-const envBaseUrl = process.env.PUMI_BASE_URL?.trim().replace(/^["']|["']$/g, "");
-const PUMI_BASE_URL =
-	envBaseUrl && /^https?:\/\//.test(envBaseUrl) ? envBaseUrl : DEFAULT_PUMI_BASE_URL;
+const sanitizeEnvValue = (value?: string) => {
+	if (!value) return undefined;
+	return value
+		.trim()
+		.replace(/;$/, "")
+		.trim()
+		.replace(/^['"]|['"]$/g, "")
+		.trim();
+};
+
+const toBasePath = (value: string) => value.replace(/\/+$/, "");
+
+const resolvePumiBaseUrl = async () => {
+	const configured = sanitizeEnvValue(process.env.PUMI_BASE_URL);
+
+	if (!configured) {
+		throw new Error("Missing PUMI_BASE_URL. Set it to an absolute URL or a relative path like /api/pumi.");
+	}
+
+	if (/^https?:\/\//.test(configured)) {
+		return toBasePath(configured);
+	}
+
+	if (!configured.startsWith("/")) {
+		throw new Error("Invalid PUMI_BASE_URL. Use an absolute URL or a relative path starting with '/'.");
+	}
+
+	const requestHeaders = await headers();
+	const host = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host");
+	if (!host) {
+		throw new Error("Cannot resolve relative PUMI_BASE_URL because request host is unavailable.");
+	}
+
+	const protocol = requestHeaders.get("x-forwarded-proto") ?? (host.includes("localhost") ? "http" : "https");
+	return toBasePath(new URL(configured, `${protocol}://${host}`).toString());
+};
 
 /**
  * Read Pumi items from payload
@@ -36,7 +69,8 @@ const readPumiItems = (payload: PumiPayload): PumiItem[] => {
  */
 const fetchPumiResource = async (resource: PumiResource, params?: Record<string, string>): Promise<PumiItem[]> => {
 	try {
-		const response = await api.get<PumiPayload>(`${PUMI_BASE_URL}/${resource}`, {
+		const baseUrl = await resolvePumiBaseUrl();
+		const response = await api.get<PumiPayload>(`${baseUrl}/${resource}`, {
 			params,
 		});
 		return readPumiItems(response.data);
