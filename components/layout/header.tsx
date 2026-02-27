@@ -3,9 +3,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 const Header = () => {
 	const [scrolled, setScrolled] = useState(false);
+	const pathname = usePathname();
 
 	useEffect(() => {
 		const onScroll = () => setScrolled(window.scrollY > 10);
@@ -23,13 +25,13 @@ const Header = () => {
 				<div className="flex items-center gap-8">
 					{/* Nav links hidden on mobile */}
 					<div className="hidden md:flex items-center gap-8">
-						<Link href="/" className="text-white text-sm hover:text-blue-300 transition-colors">
+						<Link href="/" className={`text-sm transition-colors ${pathname === "/" ? "text-blue-300 font-semibold" : "text-white hover:text-blue-300"}`}>
 							Home
 						</Link>
-						<Link href="/about" className="text-white text-sm hover:text-blue-300 transition-colors">
+						<Link href="/about" className={`text-sm transition-colors ${pathname === "/about" ? "text-blue-300 font-semibold" : "text-white hover:text-blue-300"}`}>
 							About
 						</Link>
-						<Link href="/contact" className="text-white text-sm hover:text-blue-300 transition-colors">
+						<Link href="/contact" className={`text-sm transition-colors ${pathname === "/contact" ? "text-blue-300 font-semibold" : "text-white hover:text-blue-300"}`}>
 							Contact
 						</Link>
 					</div>
