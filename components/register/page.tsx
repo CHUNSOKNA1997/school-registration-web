@@ -50,6 +50,36 @@ const RegisterForm = () => {
 
 	const handleSelect = (field: keyof FormData, value: string) =>
 		setForm((prev) => {
+			if (field === "birth_province_id") {
+				return {
+					...prev,
+					[field]: value,
+					birth_district_id: "",
+					birth_commune_id: "",
+					birth_village_id: "",
+					place_of_birth: "",
+				};
+			}
+
+			if (field === "birth_district_id") {
+				return {
+					...prev,
+					[field]: value,
+					birth_commune_id: "",
+					birth_village_id: "",
+					place_of_birth: "",
+				};
+			}
+
+			if (field === "birth_commune_id") {
+				return {
+					...prev,
+					[field]: value,
+					birth_village_id: "",
+					place_of_birth: "",
+				};
+			}
+
 			if (field === "student_type" && value !== "transfer") {
 				return {
 					...prev,
@@ -86,36 +116,6 @@ const RegisterForm = () => {
 					[field]: value,
 					current_village_id: "",
 					current_address: "",
-				};
-			}
-
-			if (field === "permanent_province_id") {
-				return {
-					...prev,
-					[field]: value,
-					permanent_district_id: "",
-					permanent_commune_id: "",
-					permanent_village_id: "",
-					permanent_address: "",
-				};
-			}
-
-			if (field === "permanent_district_id") {
-				return {
-					...prev,
-					[field]: value,
-					permanent_commune_id: "",
-					permanent_village_id: "",
-					permanent_address: "",
-				};
-			}
-
-			if (field === "permanent_commune_id") {
-				return {
-					...prev,
-					[field]: value,
-					permanent_village_id: "",
-					permanent_address: "",
 				};
 			}
 

@@ -34,15 +34,9 @@ const Step2Address = ({ form, onChange, onSelect, onNext, step, onBack }: Props)
 		districts,
 		loadingCommunes,
 		loadingDistricts,
-		loadingPermanentCommunes,
-		loadingPermanentDistricts,
-		loadingPermanentVillages,
 		loadingProvinces,
 		loadingVillages,
 		locationError,
-		permanentCommunes,
-		permanentDistricts,
-		permanentVillages,
 		provinces,
 		villages,
 	} = useAddresses(form);
@@ -63,49 +57,16 @@ const Step2Address = ({ form, onChange, onSelect, onNext, step, onBack }: Props)
 		() => toLabel(villages.find((item) => String(item.id) === form.current_village_id) ?? { id: "" }),
 		[form.current_village_id, villages],
 	);
-	const permanentProvinceLabel = useMemo(
-		() => toLabel(provinces.find((item) => String(item.id) === form.permanent_province_id) ?? { id: "" }),
-		[form.permanent_province_id, provinces],
-	);
-	const permanentDistrictLabel = useMemo(
-		() => toLabel(permanentDistricts.find((item) => String(item.id) === form.permanent_district_id) ?? { id: "" }),
-		[form.permanent_district_id, permanentDistricts],
-	);
-	const permanentCommuneLabel = useMemo(
-		() => toLabel(permanentCommunes.find((item) => String(item.id) === form.permanent_commune_id) ?? { id: "" }),
-		[form.permanent_commune_id, permanentCommunes],
-	);
-	const permanentVillageLabel = useMemo(
-		() => toLabel(permanentVillages.find((item) => String(item.id) === form.permanent_village_id) ?? { id: "" }),
-		[form.permanent_village_id, permanentVillages],
-	);
-
 	const currentAddress = useMemo(() => {
 		if (!form.current_village_id) return "";
 		return [villageLabel, communeLabel, districtLabel, provinceLabel].filter(Boolean).join(", ");
 	}, [communeLabel, districtLabel, form.current_village_id, provinceLabel, villageLabel]);
-	const permanentAddress = useMemo(() => {
-		if (!form.permanent_village_id) return "";
-		return [permanentVillageLabel, permanentCommuneLabel, permanentDistrictLabel, permanentProvinceLabel].filter(Boolean).join(", ");
-	}, [
-		form.permanent_village_id,
-		permanentCommuneLabel,
-		permanentDistrictLabel,
-		permanentProvinceLabel,
-		permanentVillageLabel,
-	]);
 
 	useEffect(() => {
 		if (form.current_address !== currentAddress) {
 			onSelect("current_address", currentAddress);
 		}
 	}, [currentAddress, form.current_address, onSelect]);
-
-	useEffect(() => {
-		if (form.permanent_address !== permanentAddress) {
-			onSelect("permanent_address", permanentAddress);
-		}
-	}, [form.permanent_address, onSelect, permanentAddress]);
 
 	return (
 		<form onSubmit={onNext} className="flex flex-col gap-4">
@@ -217,112 +178,6 @@ const Step2Address = ({ form, onChange, onSelect, onNext, step, onBack }: Props)
 					className="bg-gray-100"
 					readOnly
 					required
-				/>
-			</FormField>
-
-			<div className="grid grid-cols-2 gap-3">
-				<FormField label="Permanent Province">
-					<Select
-						value={form.permanent_province_id}
-						disabled={loadingProvinces}
-						onValueChange={(value) => onSelect("permanent_province_id", value)}
-					>
-						<SelectTrigger className="bg-white h-9 w-full">
-							<SelectValue placeholder={loadingProvinces ? "Loading..." : "Select province..."} />
-						</SelectTrigger>
-						<SelectContent
-							{...ADDRESS_SELECT_CONTENT_PROPS}
-							className="overflow-y-auto overflow-x-hidden"
-							style={SELECT_CONTENT_STYLE}
-						>
-							{provinces.map((item) => (
-								<SelectItem key={`permanent-province-${item.id}`} value={String(item.id)}>
-									{toLabel(item)}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
-				</FormField>
-
-				<FormField label="Permanent District">
-					<Select
-						value={form.permanent_district_id}
-						disabled={!form.permanent_province_id || loadingPermanentDistricts}
-						onValueChange={(value) => onSelect("permanent_district_id", value)}
-					>
-						<SelectTrigger className="bg-white h-9 w-full">
-							<SelectValue placeholder={loadingPermanentDistricts ? "Loading..." : "Select district..."} />
-						</SelectTrigger>
-						<SelectContent
-							{...ADDRESS_SELECT_CONTENT_PROPS}
-							className="overflow-y-auto overflow-x-hidden"
-							style={SELECT_CONTENT_STYLE}
-						>
-							{permanentDistricts.map((item) => (
-								<SelectItem key={`permanent-district-${item.id}`} value={String(item.id)}>
-									{toLabel(item)}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
-				</FormField>
-			</div>
-
-			<div className="grid grid-cols-2 gap-3">
-				<FormField label="Permanent Commune">
-					<Select
-						value={form.permanent_commune_id}
-						disabled={!form.permanent_district_id || loadingPermanentCommunes}
-						onValueChange={(value) => onSelect("permanent_commune_id", value)}
-					>
-						<SelectTrigger className="bg-white h-9 w-full">
-							<SelectValue placeholder={loadingPermanentCommunes ? "Loading..." : "Select commune..."} />
-						</SelectTrigger>
-						<SelectContent
-							{...ADDRESS_SELECT_CONTENT_PROPS}
-							className="overflow-y-auto overflow-x-hidden"
-							style={SELECT_CONTENT_STYLE}
-						>
-							{permanentCommunes.map((item) => (
-								<SelectItem key={`permanent-commune-${item.id}`} value={String(item.id)}>
-									{toLabel(item)}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
-				</FormField>
-
-				<FormField label="Permanent Village">
-					<Select
-						value={form.permanent_village_id}
-						disabled={!form.permanent_commune_id || loadingPermanentVillages}
-						onValueChange={(value) => onSelect("permanent_village_id", value)}
-					>
-						<SelectTrigger className="bg-white h-9 w-full">
-							<SelectValue placeholder={loadingPermanentVillages ? "Loading..." : "Select village..."} />
-						</SelectTrigger>
-						<SelectContent
-							{...ADDRESS_SELECT_CONTENT_PROPS}
-							className="overflow-y-auto overflow-x-hidden"
-							style={SELECT_CONTENT_STYLE}
-						>
-							{permanentVillages.map((item) => (
-								<SelectItem key={`permanent-village-${item.id}`} value={String(item.id)}>
-									{toLabel(item)}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
-				</FormField>
-			</div>
-
-			<FormField label="Permanent Address">
-				<Input
-					name="permanent_address"
-					value={form.permanent_address}
-					placeholder="Auto-filled from selected permanent location"
-					className="bg-gray-100"
-					readOnly
 				/>
 			</FormField>
 

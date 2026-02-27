@@ -1,7 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const ALLOWED_RESOURCES = new Set(["provinces", "districts", "communes", "villages"]);
-const PUMI_BASE_URL = "https://pumi.onrender.com/pumi";
+
+const sanitizeEnvValue = (value?: string) => {
+	if (!value) return undefined;
+	return value
+		.trim()
+		.replace(/;$/, "")
+		.trim()
+		.replace(/^['"]|['"]$/g, "")
+		.trim();
+};
+
+const toBasePath = (value: string) => value.replace(/\/+$/, "");
+
+const resolvePumiUpstreamBaseUrl = () => {
+	const upstream = sanitizeEnvValue(process.env.PUMI_UPSTREAM_BASE_URL);
+	if (!upstream) {
+		throw new Error("Missing PUMI_UPSTREAM_BASE_URL. Set it to the upstream Pumi URL.");
+	}
+
+	if (!/^https?:\/\//.test(upstream)) {
+		throw new Error("Invalid PUMI_UPSTREAM_BASE_URL. Use an absolute URL.");
+	}
+
+	return toBasePath(upstream);
+};
 
 type RouteContext = {
 	params: Promise<{
@@ -18,7 +42,17 @@ export async function GET(request: NextRequest, context: RouteContext) {
 		return NextResponse.json({ error: "Unsupported Pumi resource" }, { status: 404 });
 	}
 
-	const targetUrl = new URL(`${PUMI_BASE_URL}/${resource}`);
+	let targetUrl: URL;
+	try {
+		const upstreamBaseUrl = resolvePumiUpstreamBaseUrl();
+		targetUrl = new URL(`${upstreamBaseUrl}/${resource}`);
+	} catch (error) {
+		return NextResponse.json(
+			{ error: error instanceof Error ? error.message : "Invalid Pumi upstream configuration." },
+			{ status: 500 },
+		);
+	}
+
 	targetUrl.search = request.nextUrl.searchParams.toString();
 
 	try {
