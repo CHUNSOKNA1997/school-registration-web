@@ -1,14 +1,10 @@
 "use client";
 
 import { useMemo } from "react";
+import { isAxiosError } from "axios";
 import { useQuery } from "@tanstack/react-query";
-import {
-	getCommunesByDistrictAction,
-	getDistrictsByProvinceAction,
-	getProvincesAction,
-	getVillagesByCommuneAction,
-} from "@/actions/addresses.action";
 import type { FormData } from "@/components/register/types";
+import api from "@/lib/api/axios/api";
 
 export type PumiItem = {
 	id: number | string;
@@ -16,30 +12,56 @@ export type PumiItem = {
 	name_km?: string;
 };
 
+type PumiPayload = PumiItem[] | { data: PumiItem[] };
+type PumiResource = "provinces" | "districts" | "communes" | "villages";
+
 const EMPTY_ITEMS: PumiItem[] = [];
+const PUMI_CACHE_TIME = 5 * 60 * 1000;
+
+const readPumiItems = (payload: PumiPayload): PumiItem[] => {
+	if (Array.isArray(payload)) return payload;
+	return Array.isArray(payload.data) ? payload.data : [];
+};
+
+const fetchPumiResource = async (resource: PumiResource, params?: Record<string, string>) => {
+	try {
+		const response = await api.get<PumiPayload>(`/api/pumi/${resource}`, { params });
+		return readPumiItems(response.data);
+	} catch (error) {
+		if (isAxiosError(error)) {
+			const status = error.response?.status ?? "network";
+			throw new Error(`Pumi request failed (${resource}): ${status}`);
+		}
+		throw error;
+	}
+};
 
 export const useAddresses = (form: FormData) => {
 	const provincesQuery = useQuery({
 		queryKey: ["pumi", "provinces"],
-		queryFn: getProvincesAction,
+		queryFn: () => fetchPumiResource("provinces"),
+		staleTime: PUMI_CACHE_TIME,
 	});
 
 	const districtsQuery = useQuery({
 		queryKey: ["pumi", "districts", form.current_province_id],
-		queryFn: () => getDistrictsByProvinceAction(form.current_province_id),
+		queryFn: () => fetchPumiResource("districts", { province_id: form.current_province_id }),
 		enabled: Boolean(form.current_province_id),
+		staleTime: PUMI_CACHE_TIME,
 	});
 
 	const communesQuery = useQuery({
 		queryKey: ["pumi", "communes", form.current_district_id],
-		queryFn: () => getCommunesByDistrictAction(form.current_district_id),
+		queryFn: () => fetchPumiResource("communes", { district_id: form.current_district_id }),
 		enabled: Boolean(form.current_district_id),
+		staleTime: PUMI_CACHE_TIME,
 	});
 
 	const villagesQuery = useQuery({
 		queryKey: ["pumi", "villages", form.current_commune_id],
-		queryFn: () => getVillagesByCommuneAction(form.current_commune_id),
+		queryFn: () => fetchPumiResource("villages", { commune_id: form.current_commune_id }),
 		enabled: Boolean(form.current_commune_id),
+		staleTime: PUMI_CACHE_TIME,
 	});
 
 	const provinces = provincesQuery.data ?? EMPTY_ITEMS;
@@ -76,25 +98,29 @@ export const useAddresses = (form: FormData) => {
 export const useBirthPlace = (form: FormData) => {
 	const provincesQuery = useQuery({
 		queryKey: ["pumi", "provinces"],
-		queryFn: getProvincesAction,
+		queryFn: () => fetchPumiResource("provinces"),
+		staleTime: PUMI_CACHE_TIME,
 	});
 
 	const districtsQuery = useQuery({
 		queryKey: ["pumi", "birth-districts", form.birth_province_id],
-		queryFn: () => getDistrictsByProvinceAction(form.birth_province_id),
+		queryFn: () => fetchPumiResource("districts", { province_id: form.birth_province_id }),
 		enabled: Boolean(form.birth_province_id),
+		staleTime: PUMI_CACHE_TIME,
 	});
 
 	const communesQuery = useQuery({
 		queryKey: ["pumi", "birth-communes", form.birth_district_id],
-		queryFn: () => getCommunesByDistrictAction(form.birth_district_id),
+		queryFn: () => fetchPumiResource("communes", { district_id: form.birth_district_id }),
 		enabled: Boolean(form.birth_district_id),
+		staleTime: PUMI_CACHE_TIME,
 	});
 
 	const villagesQuery = useQuery({
 		queryKey: ["pumi", "birth-villages", form.birth_commune_id],
-		queryFn: () => getVillagesByCommuneAction(form.birth_commune_id),
+		queryFn: () => fetchPumiResource("villages", { commune_id: form.birth_commune_id }),
 		enabled: Boolean(form.birth_commune_id),
+		staleTime: PUMI_CACHE_TIME,
 	});
 
 	const provinces = provincesQuery.data ?? EMPTY_ITEMS;
