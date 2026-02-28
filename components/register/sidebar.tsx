@@ -1,10 +1,10 @@
 import Image from "next/image";
-import { User, Home, Users, BookOpen, CheckCircle2 } from "lucide-react";
-import { STEPS } from "./types";
+import { User, Home, Users, BookOpen, CheckCircle2, CreditCard } from "lucide-react";
+import { REGISTER_FLOW_STEPS, type RegisterStepId } from "./types";
 
-const ICONS = { User, Home, Users, BookOpen };
+const ICONS = { User, Home, Users, BookOpen, CreditCard };
 
-type Props = { step: number };
+type Props = { step: RegisterStepId };
 
 const RegisterSidebar = ({ step }: Props) => (
 	<div className="hidden lg:flex lg:w-[40%] bg-blue-600 flex-col items-center justify-center px-12 text-white relative overflow-hidden">
@@ -19,10 +19,11 @@ const RegisterSidebar = ({ step }: Props) => (
 			</p>
 
 			<div className="flex flex-col gap-3 w-full mt-4">
-				{STEPS.map((s, i) => {
+				{REGISTER_FLOW_STEPS.map((s, i) => {
 					const Icon = ICONS[s.icon];
-					const done = i < step;
-					const active = i === step;
+					const currentIndex = REGISTER_FLOW_STEPS.findIndex((item) => item.value === step);
+					const done = i < currentIndex;
+					const active = i === currentIndex;
 					return (
 						<div key={i} className={`flex items-center gap-3 rounded-xl px-4 py-3 transition-all ${active ? "bg-white/20 font-semibold" : done ? "bg-white/10 opacity-80" : "opacity-40"}`}>
 							<div className={`flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold shrink-0 ${done ? "bg-green-400 text-white" : active ? "bg-white text-blue-600" : "bg-white/20 text-white"}`}>

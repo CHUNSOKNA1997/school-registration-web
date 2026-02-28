@@ -61,6 +61,30 @@ const Step2Address = ({ onNext, step, onBack }: Props) => {
 	}, [communeLabel, districtLabel, form.current_village_id, provinceLabel, villageLabel]);
 
 	useEffect(() => {
+		if (!form.current_province_id && provinces[0]) {
+			onSelect("current_province_id", String(provinces[0].id));
+		}
+	}, [form.current_province_id, onSelect, provinces]);
+
+	useEffect(() => {
+		if (form.current_province_id && !form.current_district_id && districts[0]) {
+			onSelect("current_district_id", String(districts[0].id));
+		}
+	}, [districts, form.current_district_id, form.current_province_id, onSelect]);
+
+	useEffect(() => {
+		if (form.current_district_id && !form.current_commune_id && communes[0]) {
+			onSelect("current_commune_id", String(communes[0].id));
+		}
+	}, [communes, form.current_commune_id, form.current_district_id, onSelect]);
+
+	useEffect(() => {
+		if (form.current_commune_id && !form.current_village_id && villages[0]) {
+			onSelect("current_village_id", String(villages[0].id));
+		}
+	}, [form.current_commune_id, form.current_village_id, onSelect, villages]);
+
+	useEffect(() => {
 		if (form.current_address !== currentAddress) {
 			onSelect("current_address", currentAddress);
 		}

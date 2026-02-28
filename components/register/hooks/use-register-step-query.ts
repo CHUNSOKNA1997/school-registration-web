@@ -1,37 +1,34 @@
-import { useEffect } from "react";
-import { parseAsInteger, useQueryState } from "nuqs";
+import { parseAsStringLiteral, useQueryState } from "nuqs";
+import { REGISTER_FLOW_STEPS, type RegisterStepId } from "../types";
 
 type Options = {
-	maxStep: number;
+	defaultStep?: RegisterStepId;
 };
 
-export const useRegisterStepQuery = ({ maxStep }: Options) => {
-	const [stepParam, setStepParam] = useQueryState(
+const STEP_QUERY_VALUES = REGISTER_FLOW_STEPS.map((step) => step.value) as [RegisterStepId, ...RegisterStepId[]];
+
+export const useRegisterStepQuery = ({ defaultStep = "1" }: Options = {}) => {
+	const [step, setStep] = useQueryState(
 		"step",
-		parseAsInteger.withOptions({ history: "push", scroll: false }),
+		parseAsStringLiteral(STEP_QUERY_VALUES)
+			.withDefault(defaultStep)
+			.withOptions({ history: "push", scroll: false }),
 	);
 
-	const normalizedStep = stepParam && stepParam >= 1 && stepParam <= maxStep ? stepParam : 1;
-	const step = normalizedStep - 1;
+	const stepIndex = REGISTER_FLOW_STEPS.findIndex((item) => item.value === step);
 
-	useEffect(() => {
-		if (stepParam !== normalizedStep) {
-			void setStepParam(normalizedStep, { history: "replace", scroll: false });
-		}
-	}, [normalizedStep, setStepParam, stepParam]);
-
-	const goToStep = (nextStep: number) => {
-		const clamped = Math.min(Math.max(nextStep, 0), maxStep - 1) + 1;
-		void setStepParam(clamped, { history: "push", scroll: false });
+	const goToStep = (nextStep: RegisterStepId) => {
+		void setStep(nextStep, { history: "push", scroll: false });
 	};
 
 	const resetToFirstStep = () => {
-		void setStepParam(1, { history: "replace", scroll: false });
+		void setStep("1", { history: "replace", scroll: false });
 	};
 
 	return {
 		goToStep,
 		resetToFirstStep,
 		step,
+		stepIndex,
 	};
 };

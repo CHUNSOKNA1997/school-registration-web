@@ -7,8 +7,11 @@ const PHONE_FIELDS: Array<keyof FormData> = ["phone", "parent_phone", "emergency
 
 const formatPhoneNumber = (value: string) => new AsYouType("KH").input(value);
 
-export const useRegisterForm = () => {
-	const [submitted, setSubmitted] = useState(false);
+type Options = {
+	onSubmitSuccess?: (values: FormData) => void;
+};
+
+export const useRegisterForm = ({ onSubmitSuccess }: Options = {}) => {
 	const [agreeError, setAgreeError] = useState(false);
 	const formMethods = useForm<FormData>({
 		defaultValues: INITIAL_FORM,
@@ -105,11 +108,10 @@ export const useRegisterForm = () => {
 			return;
 		}
 		setAgreeError(false);
-		setSubmitted(true);
+		onSubmitSuccess?.(values);
 	});
 
 	const resetForm = () => {
-		setSubmitted(false);
 		setAgreeError(false);
 		reset(INITIAL_FORM);
 	};
@@ -125,6 +127,5 @@ export const useRegisterForm = () => {
 		onSelect,
 		resetForm,
 		submit,
-		submitted,
 	};
 };

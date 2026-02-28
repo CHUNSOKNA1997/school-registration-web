@@ -37,23 +37,28 @@ export type FormData = {
 	agree: boolean;
 };
 
+export type RegisterStepId = "1" | "2" | "3" | "4" | "payment";
+
 export const INITIAL_FORM: FormData = {
-	first_name: "", last_name: "", khmer_name: "", date_of_birth: null,
-	place_of_birth: "", gender: "", student_type: "", nationality: "",
+	first_name: "Sokna", last_name: "Chun", khmer_name: "ចុន សោកនា", date_of_birth: new Date("2008-05-10"),
+	place_of_birth: "", gender: "male", student_type: "new", nationality: "Cambodian",
 	birth_province_id: "", birth_district_id: "", birth_commune_id: "", birth_village_id: "",
-	phone: "", email: "",
+	phone: "+855 12 345 678", email: "sokna.chun@example.com",
 	current_province_id: "", current_district_id: "", current_commune_id: "", current_village_id: "",
 	current_address: "",
-	emergency_contact: "",
-	emergency_contact_relationship: "",
-	parent_name: "", parent_phone: "", parent_occupation: "",
-	class_id: "", shift: "", academic_year: "",
-	previous_school: "", notes: "", photo: null, documents: null, agree: false,
+	emergency_contact: "+855 93 456 789",
+	emergency_contact_relationship: "parent",
+	parent_name: "Chun Dara", parent_phone: "+855 77 222 333", parent_occupation: "Business Owner",
+	class_id: "Grade 10A", shift: "morning", academic_year: "2026-2027",
+	previous_school: "", notes: "Interested in science club and English debate.", photo: null, documents: null, agree: true,
 };
 
-export const STEPS = [
-	{ label: "Personal Info",		icon: "User" },
-	{ label: "Address & Emergency",	icon: "Home" },
-	{ label: "Parent / Guardian",	icon: "Users" },
-	{ label: "Academic Details",	icon: "BookOpen" },
+export const REGISTER_FLOW_STEPS = [
+	{ value: "1", label: "Personal Info", icon: "User" },
+	{ value: "2", label: "Address & Emergency", icon: "Home" },
+	{ value: "3", label: "Parent / Guardian", icon: "Users" },
+	{ value: "4", label: "Academic Details", icon: "BookOpen" },
+	{ value: "payment", label: "Payment", icon: "CreditCard" },
 ] as const;
+
+export const FORM_STEP_IDS = ["1", "2", "3", "4"] as const;

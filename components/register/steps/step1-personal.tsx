@@ -61,6 +61,30 @@ const Step1Personal = ({ onNext, step, onBack }: Props) => {
 	}, [communeLabel, districtLabel, form.birth_village_id, provinceLabel, villageLabel]);
 
 	useEffect(() => {
+		if (!form.birth_province_id && provinces[0]) {
+			onSelect("birth_province_id", String(provinces[0].id));
+		}
+	}, [form.birth_province_id, onSelect, provinces]);
+
+	useEffect(() => {
+		if (form.birth_province_id && !form.birth_district_id && districts[0]) {
+			onSelect("birth_district_id", String(districts[0].id));
+		}
+	}, [districts, form.birth_district_id, form.birth_province_id, onSelect]);
+
+	useEffect(() => {
+		if (form.birth_district_id && !form.birth_commune_id && communes[0]) {
+			onSelect("birth_commune_id", String(communes[0].id));
+		}
+	}, [communes, form.birth_commune_id, form.birth_district_id, onSelect]);
+
+	useEffect(() => {
+		if (form.birth_commune_id && !form.birth_village_id && villages[0]) {
+			onSelect("birth_village_id", String(villages[0].id));
+		}
+	}, [form.birth_commune_id, form.birth_village_id, onSelect, villages]);
+
+	useEffect(() => {
 		if (form.place_of_birth !== placeOfBirth) {
 			onSelect("place_of_birth", placeOfBirth);
 		}
