@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormProvider } from "react-hook-form";
+import { ArrowLeft } from "lucide-react";
 import { RegisterFormStateProvider } from "./context/register-form-context";
 import { useRegisterForm } from "./hooks/use-register-form";
 import { useRegisterStepQuery } from "./hooks/use-register-step-query";
@@ -83,10 +84,21 @@ const RegisterForm = () => {
 						<div className={`${isPaymentStep ? "max-w-4xl" : "max-w-lg"} mx-auto w-full`}>
 							{!isPaymentStep && (
 								<>
-									<p className="text-xs font-semibold text-blue-500 uppercase tracking-widest mb-1">
-										Step {stepIndex + 1} of {REGISTER_FLOW_STEPS.length}
-									</p>
-									<h2 className="text-2xl font-extrabold text-slate-800 mb-1">{currentStepMeta.label}</h2>
+									<div className="mb-1 flex items-start justify-between gap-4">
+										<div>
+											<p className="text-xs font-semibold uppercase tracking-widest text-blue-500">
+												Step {stepIndex + 1} of {REGISTER_FLOW_STEPS.length}
+											</p>
+											<h2 className="text-2xl font-extrabold text-slate-800">{currentStepMeta.label}</h2>
+										</div>
+										<Link
+											href="/"
+											className="inline-flex items-center gap-1 text-xs text-blue-500 hover:cursor-pointer hover:underline"
+										>
+											<ArrowLeft className="h-3.5 w-3.5" />
+											<span>Back to Home</span>
+										</Link>
+									</div>
 
 									<div className="w-full bg-gray-200 rounded-full h-1.5 mb-6">
 										<div className="bg-blue-500 h-1.5 rounded-full transition-all duration-500"
@@ -104,12 +116,6 @@ const RegisterForm = () => {
 									onBack={() => goToStep("4")}
 									onProceed={() => router.push("/onboarding")}
 								/>
-							)}
-
-							{!isPaymentStep && (
-								<p className="mt-4 text-center text-xs text-slate-400">
-									<Link href="/" className="text-blue-500 hover:underline">← Back to Home</Link>
-								</p>
 							)}
 						</div>
 					</div>
