@@ -5,15 +5,11 @@ import {
 } from "@/components/ui/select";
 import DatePicker from "@/components/ui/date-picker";
 import { useBirthPlace, type PumiItem } from "@/hooks/useAddresses";
+import { useRegisterFormState } from "../context/register-form-context";
 import FormField from "../form-field";
 import StepButtons from "../step-buttons";
-import type { FormData } from "../types";
 
 type Props = {
-	form: FormData;
-	onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-	onSelect: (field: keyof FormData, value: string) => void;
-	onDateChange: (field: keyof FormData, date: Date | undefined) => void;
 	onNext: (e: React.FormEvent) => void;
 	step: number;
 	onBack: () => void;
@@ -28,7 +24,8 @@ const ADDRESS_SELECT_CONTENT_PROPS = {
 	sideOffset: 4,
 };
 
-const Step1Personal = ({ form, onChange, onSelect, onDateChange, onNext, step, onBack }: Props) => {
+const Step1Personal = ({ onNext, step, onBack }: Props) => {
+	const { form, onChange, onDateChange, onSelect } = useRegisterFormState();
 	const {
 		communes,
 		districts,

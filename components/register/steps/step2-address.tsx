@@ -6,14 +6,11 @@ import {
 	Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { useAddresses, type PumiItem } from "@/hooks/useAddresses";
+import { useRegisterFormState } from "../context/register-form-context";
 import FormField from "../form-field";
 import StepButtons from "../step-buttons";
-import type { FormData } from "../types";
 
 type Props = {
-	form: FormData;
-	onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-	onSelect: (field: keyof FormData, value: string) => void;
 	onNext: (e: React.FormEvent) => void;
 	step: number;
 	onBack: () => void;
@@ -28,7 +25,8 @@ const ADDRESS_SELECT_CONTENT_PROPS = {
 	sideOffset: 4,
 };
 
-const Step2Address = ({ form, onChange, onSelect, onNext, step, onBack }: Props) => {
+const Step2Address = ({ onNext, step, onBack }: Props) => {
+	const { form, onChange, onSelect } = useRegisterFormState();
 	const {
 		communes,
 		districts,

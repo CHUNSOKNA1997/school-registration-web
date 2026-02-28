@@ -5,6 +5,7 @@ import { Mail, Phone } from "lucide-react";
 const ContactHero = () => {
 return (
 <section
+data-header-overlay="true"
 className="relative h-[calc(100vh+65px)] -mt-[65px] pt-[65px] flex items-center bg-cover bg-center bg-no-repeat px-4"
 style={{ backgroundImage: "url('/hero-section.jpeg')" }}
 >
@@ -17,7 +18,7 @@ style={{ backgroundImage: "url('/hero-section.jpeg')" }}
 Help us route <br /> your inquiry
 </h1>
 <p className="text-white/75 text-sm lg:text-base leading-relaxed max-w-md">
-Questions about our programs, application process, or how to get started? We're here to guide you through every step. Contact us to learn which program fits your goals and timeline.
+Questions about our programs, application process, or how to get started? We&apos;re here to guide you through every step. Contact us to learn which program fits your goals and timeline.
 </p>
 </div>
 
@@ -27,7 +28,7 @@ Questions about our programs, application process, or how to get started? We're 
 <Image src="/starlight-logo.png" alt="Starlight Academy" width={48} height={48} />
 <div>
 <p className="text-white/60 text-xs">Starlight Academy</p>
-<p className="text-white font-bold text-lg">Let's Get In Touch</p>
+<p className="text-white font-bold text-lg">Let&apos;s Get In Touch</p>
 </div>
 </div>
 
